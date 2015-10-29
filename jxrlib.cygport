@@ -1,0 +1,38 @@
+inherit cmake
+
+NAME="jxrlib"
+VERSION=1.1
+RELEASE=1
+CATEGORY="Libs"
+SUMMARY="JPEG-XR codec"
+DESCRIPTION="This library supports the JPEG XR still image format, based on
+technology originally developed by Mirosoft under the name HD Photo (formerly
+Windows Media Photo). The JPEG XR format is similar, but not identical, to the
+HD Photo/Windows Media Photo format."
+HOMEPAGE="https://jxrlib.codeplex.com/"
+SRC_URI="http://jxrlib.codeplex.com/downloads/get/685249#/jxrlib_${VERSION//\./_}.tar.gz"
+# based on Fedora with some tweaks
+SRC_URI+=" CMakeLists.txt"
+SRC_DIR="jxrlib"
+PATCH_URI="http://pkgs.fedoraproject.org/cgit/jxrlib.git/plain/jxrlib_warnings.patch"
+
+PKG_NAMES="jxrlib libjxr0 libjxr-devel"
+jxrlib_CATEGORY="Graphics"
+jxrlib_CONTENTS="usr/bin/Jxr*App.exe usr/share/doc/"
+libjxr0_CONTENTS="usr/bin/cygjpegxr-0.dll usr/bin/cygjxrglue-0.dll"
+libjxr_devel_CONTENTS="usr/include/jxrlib/ usr/lib/libjpegxr.dll.a usr/lib/libjxrglue.dll.a"
+
+CYGPORT_USE_UNSTABLE_API=1
+src_unpack_hook() {
+	for file in `find . -type f -name '*.c' -or -name '*.h' -or -name '*.txt'`
+	do
+		iconv -f ISO-8859-15 -t UTF-8 $file > $file.new && \
+		sed -i 's|\r||g' $file.new && \
+		touch -r $file $file.new && mv -f $file.new $file
+	done
+	rm -fr bin/
+	# use w32api version, freeimage FTBFS with this one
+	rm -f common/include/guiddef.h
+}
+
+DOCS="doc/*"
